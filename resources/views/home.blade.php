@@ -1,0 +1,313 @@
+@extends('layouts.app')
+
+@section('title', 'Environs - Home')
+
+@section('content')
+
+    {{-- Carousel Start --}}
+    <div class="container-fluid carousel-header vh-100 px-0">
+        <div id="carouselId" class="carousel slide" data-bs-ride="carousel">
+            <ol class="carousel-indicators">
+                <li data-bs-target="#carouselId" data-bs-slide-to="0" class="active"></li>
+                <li data-bs-target="#carouselId" data-bs-slide-to="1"></li>
+                <li data-bs-target="#carouselId" data-bs-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner" role="listbox">
+                <div class="carousel-item active">
+                    <img src="{{ asset('img/carousel-1.jpg') }}" class="img-fluid" alt="Image">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width: 900px;">
+                            <h4 class="text-white text-uppercase fw-bold mb-4" style="letter-spacing: 3px;">WE'll Save Our Planet</h4>
+                            <h1 class="display-1 text-capitalize text-white mb-4">Protect Environment</h1>
+                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry...</p>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <a class="btn-hover-bg btn btn-primary text-white py-3 px-5" href="#">Join With Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ asset('img/carousel-2.jpg') }}" class="img-fluid" alt="Image">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width: 900px;">
+                            <h4 class="text-white text-uppercase fw-bold mb-4">WE'll Save Our Planet</h4>
+                            <h1 class="display-1 text-capitalize text-white mb-4">Protect Environment</h1>
+                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry...</p>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <a class="btn-hover-bg btn btn-primary text-white py-3 px-5" href="#">Join With Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ asset('img/carousel-3.jpg') }}" class="img-fluid" alt="Image">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width: 900px;">
+                            <h4 class="text-white text-uppercase fw-bold mb-4">WE'll Save Our Planet</h4>
+                            <h1 class="display-1 text-capitalize text-white mb-4">Protect Environment</h1>
+                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry...</p>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <a class="btn-hover-bg btn btn-primary text-white py-3 px-5" href="#">Join With Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+    {{-- Carousel End --}}
+
+
+
+
+    {{-- Causes Section Start --}}
+    <section class="causes-hero py-5 bg-light">
+        <div class="container text-center py-5">
+            <!-- Title -->
+            <h2 class="display-5 fw-bold mb-3">Support Our Causes</h2>
+            <p class="lead mb-5">Join hands to make a difference. Explore our causes and help create a better future.</p>
+
+            <!-- Animated button -->
+            <a href="{{ route('causes.index') }}"
+               class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm position-relative overflow-hidden"
+               style="transition: all 0.4s;">
+                <span class="position-relative">See Our Causes</span>
+                <span class="position-absolute top-0 start-0 w-100 h-100 bg-white opacity-10 rounded-pill"
+                      style="transform: translateX(-100%); transition: transform 0.4s;"></span>
+            </a>
+
+            <!-- Featured Causes Cards -->
+            <div class="row justify-content-center mt-5 g-4">
+                @foreach($featuredCauses as $cause)
+                    @php
+                        $progress = method_exists($cause, 'percentRaised') ? $cause->percentRaised() : ($cause->donations_percent ?? 0);
+                        $clamped = min(max((int)$progress, 0), 100);
+                    @endphp
+
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                            {{-- IMAGE --}}
+                            @if($cause->image_path)
+                                <img
+                                    src="{{ asset('storage/'.$cause->image_path) }}"
+                                    alt="{{ $cause->title }}"
+                                    class="card-img-top"
+                                    style="height: 180px; object-fit: cover;"
+                                >
+                            @endif
+
+                            <div class="card-body text-center d-flex flex-column">
+                                <h4 class="mb-2">
+                                    <a href="{{ route('causes.show', $cause) }}" class="text-decoration-none">
+                                        {{ $cause->title }}
+                                    </a>
+                                </h4>
+
+                                <p class="card-text text-muted mb-3">
+                                    {{ Str::limit($cause->description, 80) }}
+                                </p>
+
+                                {{-- GOAL / RAISED --}}
+                                <p class="mb-2 small">
+                                    <strong>Raised:</strong> €{{ number_format($cause->totalDonations(), 2) }}
+                                    <span class="text-muted">/</span>
+                                    <strong>Goal:</strong> €{{ number_format($cause->goal_amount, 2) }}
+                                </p>
+
+                                {{-- PROGRESS BAR --}}
+                                <div class="progress mb-3" style="height: 14px;">
+                                    <div
+                                        class="progress-bar
+                            @if($clamped >= 100) bg-success
+                            @elseif($clamped >= 50) bg-info
+                            @else bg-warning
+                            @endif"
+                                        role="progressbar"
+                                        style="width: {{ $clamped }}%;"
+                                        aria-valuenow="{{ $clamped }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ $clamped }}%
+                                    </div>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <a href="{{ route('causes.show', $cause) }}" class="btn btn-outline-primary btn-sm">
+                                        Donate now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+    </section>
+    {{-- Causes Section End --}}
+
+
+
+
+
+
+    {{-- Workshops Section Start --}}
+    <section class="py-5">
+        <div class="container text-center py-5">
+            <h2 class="display-5 fw-bold mb-3">Skill-Up With Workshops</h2>
+            <p class="lead mb-5">Hands-on sessions led by practitioners. Learn, build, and collaborate.</p>
+
+            <a href="{{ route('workshops.index') }}"
+               class="btn btn-outline-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm">
+                Browse Workshops
+            </a>
+
+            <div class="row justify-content-center mt-5 g-4">
+                @foreach($featuredWorkshops as $workshop)
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                            {{-- IMAGE --}}
+                            @if(!empty($workshop->image_path))
+                                <img src="{{ asset('storage/'.$workshop->image_path) }}"
+                                     alt="{{ $workshop->title }}"
+                                     class="card-img-top"
+                                     style="height: 180px; object-fit: cover;">
+                            @endif
+
+                            <div class="card-body d-flex flex-column text-center">
+                                <h4 class="mb-2">
+                                    <a href="{{ route('workshops.show', $workshop) }}" class="text-decoration-none">
+                                        {{ $workshop->title }}
+                                    </a>
+                                </h4>
+
+                                <p class="text-muted mb-3">
+                                    {{ \Illuminate\Support\Str::limit($workshop->description ?? $workshop->summary ?? '', 90) }}
+                                </p>
+
+                                {{-- Materials count (many-to-many) --}}
+                                @isset($workshop->materials_count)
+                                    <p class="small mb-3">
+                                        <strong>Materials:</strong> {{ $workshop->materials_count }}
+                                    </p>
+                                @endisset
+
+                                <div class="mt-auto">
+                                    <a href="{{ route('workshops.show', $workshop) }}"
+                                       class="btn btn-outline-primary btn-sm">
+                                        View details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    {{-- Workshops Section End --}}
+
+
+
+
+    {{-- Events Section Start --}}
+    <section class="py-5 bg-light">
+        <div class="container text-center py-5">
+            <h2 class="display-5 fw-bold mb-3">Upcoming Events</h2>
+            <p class="lead mb-5">Meet, engage, and take action together at our community events.</p>
+
+            <a href="{{ route('events.index') }}"
+               class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm">
+                See All Events
+            </a>
+
+            <div class="row justify-content-center mt-5 g-4">
+                @foreach($featuredEvents as $event)
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                            {{-- IMAGE (optional if you added image_path to events) --}}
+                            @if(!empty($event->image_path))
+                                <img src="{{ asset('storage/'.$event->image_path) }}"
+                                     alt="{{ $event->title }}"
+                                     class="card-img-top"
+                                     style="height: 180px; object-fit: cover;">
+                            @endif
+
+                            <div class="card-body d-flex flex-column text-center">
+                                <h4 class="mb-2">
+                                    <a href="{{ route('events.show', $event) }}" class="text-decoration-none">
+                                        {{ $event->title }}
+                                    </a>
+                                </h4>
+
+                                {{-- Date & venue/lieu --}}
+                                <p class="small text-muted mb-2">
+                                    @if(!empty($event->start_at))
+                                        <i class="bi bi-calendar-event"></i>
+                                        {{ \Carbon\Carbon::parse($event->start_at)->format('d/m/Y H:i') }}
+                                    @endif
+                                    @if($event->lieu?->name)
+                                        <span class="text-muted">&middot;</span>
+                                        <i class="bi bi-geo-alt"></i> {{ $event->lieu->name }}
+                                    @endif
+                                </p>
+
+                                <p class="text-muted mb-3">
+                                    {{ \Illuminate\Support\Str::limit($event->description ?? '', 90) }}
+                                </p>
+
+                                <div class="mt-auto">
+                                    <a href="{{ route('events.show', $event) }}"
+                                       class="btn btn-outline-primary btn-sm">
+                                        View details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    {{-- Events Section End --}}
+
+
+
+
+
+    {{-- Auth Buttons Section --}}
+    <section class="py-5 bg-dark text-center text-white">
+        <div class="container">
+            @guest
+                <h2 class="fw-bold mb-4">Join Our Community</h2>
+                <p class="lead mb-4">Create an account or log in to support causes, donate, and participate in events.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-lg px-4">Register</a>
+                </div>
+            @endguest
+
+            @auth
+                <h2 class="fw-bold mb-3">Welcome back, {{ auth()->user()->name }}!</h2>
+                <p class="lead mb-4">Head to your dashboard or explore new causes, workshops, and events.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.causes.index') }}" class="btn btn-warning btn-lg px-4">Go to Admin</a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-light btn-lg px-4">Logout</button>
+                    </form>
+                </div>
+            @endauth
+        </div>
+    </section>
+
+
+@endsection
