@@ -142,3 +142,4 @@ Route::prefix('admin')
 // Route::fallback(fn() => abort(404));
 
 
+// Note: You can customize the 404 error page in resources/views/errors/404.blade.php
