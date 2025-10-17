@@ -23,7 +23,20 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
+            // ✅ Block banned users immediately after login succeeds
+            $user = Auth::user();
+            if ($user && $user->is_banned) {
+                $reason = $user->ban_reason ?: 'Votre compte est suspendu.'; // or English if you prefer
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
+                return back()
+                    ->withErrors(['email' => $reason])
+                    ->onlyInput('email');
+            }
+
+            // ✅ Then continue with your existing redirects
             if (auth()->user()->role === 'admin') {
                 return redirect()->route('admin.causes.index');
             }
@@ -34,6 +47,7 @@ class LoginController extends Controller
             'email' => 'Identifiants invalides.',
         ])->onlyInput('email');
     }
+
 
 
     public function destroy(Request $request)

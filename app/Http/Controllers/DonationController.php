@@ -19,6 +19,10 @@ class DonationController extends Controller
             'date' => now()->toDateString(),
         ]);
 
+        if (auth()->check()) {
+            $data['donor_name'] = auth()->user()->name;
+        }
+
         return redirect()->route('causes.show', $cause)
             ->with('success','Thank you! Your donation was recorded.');
     }

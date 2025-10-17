@@ -18,6 +18,13 @@
                 </li>
 
                 <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('admin.users.index') }}" aria-expanded="false">
+                        <i class="ti ti-atom"></i>
+                        <span class="hide-menu">users</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
                     <a class="sidebar-link" href="{{ route('admin.events.index') }}" aria-expanded="false">
                         <i class="ti ti-atom"></i>
                         <span class="hide-menu">Events</span>
@@ -78,6 +85,8 @@
                         <span class="hide-menu">tasks</span>
                     </a>
                 </li>
+
+
 
 
 

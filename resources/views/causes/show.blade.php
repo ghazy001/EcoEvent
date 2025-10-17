@@ -53,11 +53,18 @@
                     <h5>Make a donation</h5>
                     <form method="POST" action="{{ route('causes.donations.store', $cause) }}">
                         @csrf
-                        <div class="mb-2">
-                            <input name="donor_name" class="form-control" placeholder="Your name"
-                                   value="{{ old('donor_name') }}" required>
-                            @error('donor_name')<div class="text-danger">{{ $message }}</div>@enderror
-                        </div>
+                        @auth
+                            {{-- Automatically use logged-in user name --}}
+                            <input type="hidden" name="donor_name" value="{{ auth()->user()->name }}">
+                        @else
+                            {{-- Fallback for guests (optional) --}}
+                            <div class="mb-2">
+                                <input name="donor_name" class="form-control" placeholder="Your name"
+                                       value="{{ old('donor_name') }}" required>
+                                @error('donor_name')<div class="text-danger">{{ $message }}</div>@enderror
+                            </div>
+                        @endauth
+
                         <div class="mb-2">
                             <input name="amount" type="number" step="0.01" class="form-control"
                                    placeholder="Amount (€)" value="{{ old('amount') }}" required>
