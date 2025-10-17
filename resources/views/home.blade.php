@@ -155,6 +155,184 @@
 
 
 
+    {{-- Donation Stats Start --}}
+    <section class="py-5">
+        <div class="container">
+
+            {{-- KPIs --}}
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 fw-bold">€{{ number_format($totalRaised, 2) }}</div>
+                            <div class="text-muted">Total Raised</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 fw-bold">{{ number_format($donationsCnt) }}</div>
+                            <div class="text-muted">Total Donations</div>
+                            <div class="small text-muted mt-1">Avg: €{{ number_format($avgDonation, 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="fw-semibold">Progress to All Goals</div>
+                                <div class="badge bg-primary">{{ $globalPercent }}%</div>
+                            </div>
+                            <div class="progress" style="height: 14px;">
+                                <div class="progress-bar @if($globalPercent>=100) bg-success @elseif($globalPercent>=50) bg-info @else bg-warning @endif"
+                                     role="progressbar"
+                                     style="width: {{ $globalPercent }}%;"
+                                     aria-valuenow="{{ $globalPercent }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div class="small text-muted mt-2">
+                                Raised: €{{ number_format($totalRaised,2) }}
+                                <span class="text-muted">/</span>
+                                Goal: €{{ number_format($totalGoal,2) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Chart + Top Causes + Recent Donations --}}
+            <div class="row g-4">
+                {{-- Area: Chart --}}
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="m-0">Donations (Last 12 Months)</h5>
+                                <span class="badge bg-light text-dark">Monthly €</span>
+                            </div>
+                            <canvas id="donationsChart" height="140"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Area: Top Causes --}}
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body">
+                            <h5 class="mb-3">Top Causes</h5>
+                            <ul class="list-group list-group-flush">
+                                @forelse($topCauses as $i => $cause)
+                                    @php
+                                        $rank = $i + 1;
+                                        $raised = (float) ($cause->donations_sum_amount ?? 0);
+                                    @endphp
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge rounded-pill bg-primary me-3" style="width:34px">{{ $rank }}</span>
+                                            <a href="{{ route('causes.show', $cause) }}" class="text-decoration-none fw-semibold">{{ $cause->title }}</a>
+                                        </div>
+                                        <div class="fw-bold">€{{ number_format($raised, 2) }}</div>
+                                    </li>
+                                @empty
+                                    <li class="list-group-item text-muted">No donations yet.</li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Area: Recent Donations --}}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Recent Donations</h5>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th>Donor</th>
+                                        <th>Cause</th>
+                                        <th class="text-end">Amount</th>
+                                        <th>Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @forelse($recentDonations as $donation)
+                                        <tr>
+                                            <td class="fw-semibold">{{ $donation->donor_name }}</td>
+                                            <td>
+                                                @if($donation->cause)
+                                                    <a href="{{ route('causes.show', $donation->cause) }}" class="text-decoration-none">
+                                                        {{ $donation->cause->title }}
+                                                    </a>
+                                                @else
+                                                    <span class="text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">€{{ number_format($donation->amount, 2) }}</td>
+                                            <td>{{ optional($donation->date)->format('d/m/Y') }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="4" class="text-muted text-center">No recent donations.</td></tr>
+                                    @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div> {{-- row --}}
+        </div>
+    </section>
+    {{-- Donation Stats End --}}
+
+
+    @push('scripts')
+        {{-- Chart.js CDN (lightweight, drop-in) --}}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            (function () {
+                const ctx = document.getElementById('donationsChart');
+                if (!ctx) return;
+
+                const labels = @json($labels);
+                const data    = @json($series);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: '€ Raised',
+                            data,
+                            tension: 0.35,
+                            fill: true,
+                            borderWidth: 2,
+                            pointRadius: 3,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { callback: v => '€' + v } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            })();
+        </script>
+    @endpush
+
+
+
+
 
 
     {{-- Workshops Section Start --}}

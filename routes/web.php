@@ -35,6 +35,10 @@ use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Admin\TaskController    as AdminTaskController;
 use App\Http\Controllers\ProjectController;
 
+use App\Models\Donation;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
 
 
 
@@ -45,6 +49,7 @@ use App\Http\Controllers\ProjectController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
+    // Featured sections (unchanged)
     $featuredCauses = Cause::take(3)->get();
 
     $featuredEvents = Event::with('lieu')
@@ -57,8 +62,57 @@ Route::get('/', function () {
         ->take(6)
         ->get();
 
-    return view('home', compact('featuredCauses', 'featuredEvents', 'featuredWorkshops'));
+    // ====== Donation Stats ======
+    $totalRaised   = (float) Donation::sum('amount');
+    $donationsCnt  = (int)   Donation::count();
+    $avgDonation   = $donationsCnt > 0 ? $totalRaised / $donationsCnt : 0.0;
+
+    $totalGoal     = (float) Cause::sum('goal_amount');
+    $globalPercent = $totalGoal > 0 ? min(100, round(($totalRaised / $totalGoal) * 100)) : 0;
+
+    // Top causes by amount raised
+    $topCauses = Cause::withSum('donations', 'amount')
+        ->orderByDesc('donations_sum_amount')
+        ->take(5)
+        ->get();
+
+    // Recent donations
+    $recentDonations = Donation::latest('date')->take(6)->get();
+
+    // Donations per month for last 12 months
+    $from = now()->subMonths(11)->startOfMonth();
+    $rawMonthly = Donation::selectRaw('DATE_FORMAT(`date`, "%Y-%m") as ym, SUM(amount) as total')
+        ->whereDate('date', '>=', $from)
+        ->groupBy('ym')
+        ->orderBy('ym')
+        ->get()
+        ->keyBy('ym');
+
+    // Build complete 12-month series (ensures missing months show as 0)
+    $labels = [];
+    $series = [];
+    for ($i = 0; $i < 12; $i++) {
+        $month = $from->copy()->addMonths($i);
+        $ym = $month->format('Y-m');
+        $labels[] = $month->isoFormat('MMM YYYY');
+        $series[] = (float) ($rawMonthly[$ym]->total ?? 0);
+    }
+
+
+
+
+
+
+
+    return view('home', compact(
+        'featuredCauses', 'featuredEvents', 'featuredWorkshops',
+        'totalRaised', 'donationsCnt', 'avgDonation',
+        'totalGoal', 'globalPercent',
+        'topCauses', 'recentDonations',
+        'labels', 'series'
+    ));
 })->name('home');
+
 
 /*
 |--------------------------------------------------------------------------
