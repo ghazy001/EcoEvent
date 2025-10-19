@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('cause_id')->constrained()->cascadeOnDelete();
             $table->string('donor_name');
             $table->decimal('amount', 12, 2)->default(0);
-            $table->date('date')->default(DB::raw('CURRENT_DATE'));
+            $table->date('date');
             $table->timestamps();
 
             $table->index('cause_id');
