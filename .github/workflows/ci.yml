@@ -4,6 +4,11 @@ on:
   push:
     branches: [ master ]
   pull_request:
+  workflow_dispatch: {}   # ← run manually from the Actions tab
+
+concurrency:
+  group: laravel-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -32,6 +37,9 @@ jobs:
       DB_DATABASE: laravel
       DB_USERNAME: root
       DB_PASSWORD: root
+      # Map secrets to env so we can safely check them in `if:`
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -39,11 +47,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.3
+          php-version: '8.3'
           extensions: mbstring, pdo_mysql, intl, zip
           coverage: xdebug
 
-      - name: Cache Composer dependencies
+      - name: Cache Composer
         uses: actions/cache@v4
         with:
           path: ~/.composer/cache
@@ -63,18 +71,20 @@ jobs:
       - name: Run tests (with coverage)
         run: vendor/bin/phpunit --coverage-clover=coverage.xml
 
+      # Only run Sonar when secrets exist and not from a forked PR
       - name: SonarQube Scan
-        if: ${{ secrets.SONAR_HOST_URL && secrets.SONAR_TOKEN }}
+        if: ${{ env.SONAR_HOST_URL != '' && env.SONAR_TOKEN != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: SonarSource/sonarqube-scan-action@v3
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage
           path: coverage.xml
+          retention-days: 7
 
   docker:
     needs: test
@@ -93,7 +103,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels)
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -101,6 +111,7 @@ jobs:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha
+            type=ref,event=tag
 
       - name: Build & push Docker image
         uses: docker/build-push-action@v6
