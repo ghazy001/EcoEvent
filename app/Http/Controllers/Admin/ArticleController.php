@@ -12,11 +12,24 @@ use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        $articles = Article::with('category')->latest('published_at')->latest()->paginate(12);
-        return view('admin.articles.index', compact('articles'));
+        $articles = Article::with('category')
+            ->search($request->input('q'))                // string|null
+            ->categoryId($request->input('category_id'))  // string|int|null
+            ->status($request->input('status'))           // string|null
+            ->publishedBetween($request->input('from'), $request->input('to'))
+            ->latest('published_at')
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        $categories = Category::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.articles.index', compact('articles', 'categories'));
     }
+
 
     public function create()
     {

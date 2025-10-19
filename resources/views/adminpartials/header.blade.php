@@ -16,8 +16,7 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="drop1">
                     <div class="message-body">
-                        <a href="javascript:void(0)" class="dropdown-item">Item 1</a>
-                        <a href="javascript:void(0)" class="dropdown-item">Item 2</a>
+                        <a href="javascript:void(0)" class="dropdown-item">Empty</a>
                     </div>
                 </div>
             </li>

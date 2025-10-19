@@ -31,5 +31,50 @@ class Article extends Model
             $this->published_at = now();
         }
     }
+
+
+
+    /* -------- Scopes -------- */
+
+    public function scopeSearch($q, ?string $term)
+    {
+        if (!filled($term)) return $q;
+        return $q->where(fn($qq) =>
+        $qq->where('title', 'like', "%{$term}%")
+            ->orWhere('excerpt', 'like', "%{$term}%")
+            ->orWhere('body', 'like', "%{$term}%")
+        );
+    }
+
+    public function scopeCategoryId($q, $categoryId)
+    {
+        if (!filled($categoryId)) return $q;
+        return $q->where('category_id', $categoryId);
+    }
+
+    public function scopeStatus($q, ?string $status)
+    {
+        return match ($status) {
+            'published' => $q->where('is_published', true),
+            'draft'     => $q->where('is_published', false),
+            default     => $q
+        };
+    }
+
+    public function scopePublishedBetween($q, $from = null, $to = null)
+    {
+        if (filled($from)) $q->whereDate('published_at', '>=', $from);
+        if (filled($to))   $q->whereDate('published_at', '<=', $to);
+        return $q;
+    }
+
+    public function scopeDefaultOrder($q)
+    {
+        return $q->orderByDesc('published_at')->orderByDesc('created_at');
+    }
+
+
+
+
 }
 

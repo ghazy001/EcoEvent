@@ -9,10 +9,24 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::with('lieu')->orderBy('start_at','desc')->paginate(15);
-        return view('admin.events.index', compact('events'));
+        $perPage = (int) $request->input('per_page', 15);
+        $perPage = in_array($perPage, [10,15,25,50], true) ? $perPage : 15;
+
+        $events = Event::with('lieu')
+            ->search($request->input('q'))
+            ->atLieu($request->input('lieu_id'))
+            ->period($request->input('period'))
+            ->startBetween($request->input('from'), $request->input('to'))
+            ->capacityBetween($request->input('min_capacity'), $request->input('max_capacity'))
+            ->sortBy($request->input('sort'))
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $lieux = Lieu::orderBy('name')->get(['id','name']);
+
+        return view('admin.events.index', compact('events','lieux'));
     }
 
     public function create()

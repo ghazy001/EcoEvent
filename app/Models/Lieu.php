@@ -8,10 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lieu extends Model
 {
-
     use HasFactory, SoftDeletes;
 
-    // On force le nom de table français pour éviter la pluralisation anglaise "lieus"
+    // Force the French table name ("lieux")
     protected $table = 'lieux';
 
     protected $fillable = [
@@ -21,8 +20,15 @@ class Lieu extends Model
         'description',
     ];
 
+    // ✅ Relation to Events
     public function events()
     {
         return $this->hasMany(Event::class, 'lieu_id');
+    }
+
+    // ✅ Relation to Workshops
+    public function workshops()
+    {
+        return $this->hasMany(Workshop::class, 'lieu_id');
     }
 }

@@ -41,4 +41,57 @@ class Cause extends Model
             }
         });
     }
+
+
+    /* -------- Scopes -------- */
+
+    public function scopeSearch($q, $term)
+    {
+        $term = is_string($term) ? trim($term) : null;
+        if ($term === null || $term === '') return $q;
+
+        return $q->where(function ($qq) use ($term) {
+            $qq->where('title', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
+    }
+
+    public function scopeStatus($q, $status)
+    {
+        if ($status === null || $status === '') return $q;
+        return $q->where('status', $status);
+    }
+
+    public function scopeGoalBetween($q, $min, $max)
+    {
+        if ($min !== null && $min !== '') $q->where('goal_amount', '>=', (float) $min);
+        if ($max !== null && $max !== '') $q->where('goal_amount', '<=', (float) $max);
+        return $q;
+    }
+
+    public function scopeHasImage($q, $flag)
+    {
+        if ($flag === null) return $q;
+        if (filter_var($flag, FILTER_VALIDATE_BOOLEAN)) {
+            return $q->whereNotNull('image_path')->where('image_path', '!=', '');
+        }
+        return $q;
+    }
+
+    public function scopeSortBy($q, $sort)
+    {
+        // whitelist
+        return match ($sort) {
+            'title_asc'        => $q->orderBy('title'),
+            'title_desc'       => $q->orderByDesc('title'),
+            'goal_asc'         => $q->orderBy('goal_amount'),
+            'goal_desc'        => $q->orderByDesc('goal_amount'),
+            'status_asc'       => $q->orderBy('status'),
+            'status_desc'      => $q->orderByDesc('status'),
+            'created_desc'     => $q->orderByDesc('created_at'),
+            'created_asc'      => $q->orderBy('created_at'),
+            default            => $q->orderByDesc('created_at'),
+        };
+    }
+
 }

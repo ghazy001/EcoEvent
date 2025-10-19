@@ -19,10 +19,8 @@
                         <div class="p-3" style="max-width: 900px;">
                             <h4 class="text-white text-uppercase fw-bold mb-4" style="letter-spacing: 3px;">WE'll Save Our Planet</h4>
                             <h1 class="display-1 text-capitalize text-white mb-4">Protect Environment</h1>
-                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry...</p>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <a class="btn-hover-bg btn btn-primary text-white py-3 px-5" href="#">Join With Us</a>
-                            </div>
+                            <p class="mb-5 fs-5">Every action counts in the fight against climate change. From organizing eco-friendly events to supporting green causes, we empower communities to make sustainable choices. Be part of the solution and help us build a cleaner, greener world for all.</p>
+
                         </div>
                     </div>
                 </div>
@@ -32,10 +30,7 @@
                         <div class="p-3" style="max-width: 900px;">
                             <h4 class="text-white text-uppercase fw-bold mb-4">WE'll Save Our Planet</h4>
                             <h1 class="display-1 text-capitalize text-white mb-4">Protect Environment</h1>
-                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry...</p>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <a class="btn-hover-bg btn btn-primary text-white py-3 px-5" href="#">Join With Us</a>
-                            </div>
+                            <p class="mb-5 fs-5">Join us in creating a sustainable future through community action and environmental awareness. Together, we organize impactful events, support vital causes, and empower individuals to make a real difference in protecting our planet for generations to come.</p>
                         </div>
                     </div>
                 </div>
@@ -45,10 +40,8 @@
                         <div class="p-3" style="max-width: 900px;">
                             <h4 class="text-white text-uppercase fw-bold mb-4">WE'll Save Our Planet</h4>
                             <h1 class="display-1 text-capitalize text-white mb-4">Protect Environment</h1>
-                            <p class="mb-5 fs-5">Lorem Ipsum is simply dummy text of the printing and typesetting industry...</p>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <a class="btn-hover-bg btn btn-primary text-white py-3 px-5" href="#">Join With Us</a>
-                            </div>
+                            <p class="mb-5 fs-5">Every small action leads to big change. Through workshops, conservation projects, and eco-friendly events, we're building a global community dedicated to environmental protection and sustainable living.</p>
+
                         </div>
                     </div>
                 </div>
@@ -390,6 +383,177 @@
         </div>
     </section>
     {{-- Workshops Section End --}}
+
+
+
+
+    {{-- Workshops Stats Start --}}
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="display-6 fw-bold mb-0">Workshops Stats</h2>
+                <span class="text-muted small">Last 12 months</span>
+            </div>
+
+            {{-- KPI Cards --}}
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 fw-bold">{{ number_format($totalWorkshops) }}</div>
+                            <div class="text-muted">Total Workshops</div>
+                            <div class="small text-muted mt-1">Published: {{ $publishedCount }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 fw-bold">{{ number_format($upcomingCount) }}</div>
+                            <div class="text-muted">Upcoming</div>
+                            <div class="small text-muted mt-1">Past: {{ $pastCount }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 fw-bold">{{ number_format($avgCapacity) }}</div>
+                            <div class="text-muted">Avg Capacity</div>
+                            <div class="small text-muted mt-1">Total: {{ number_format($totalCapacity) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body text-center">
+                            <div class="display-6 fw-bold">{{ number_format($avgMaterials) }}</div>
+                            <div class="text-muted">Avg Materials / Workshop</div>
+                            <div class="small text-muted mt-1">Based on linked items</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Chart + Top Lists --}}
+            <div class="row g-4">
+                {{-- Line Chart --}}
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="m-0">Workshops per Month</h5>
+                                <span class="badge bg-light text-dark">Published</span>
+                            </div>
+                            <canvas id="workshopsChart" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Top Workshops (by materials count) --}}
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body">
+                            <h5 class="mb-3">Top Workshops</h5>
+                            <ul class="list-group list-group-flush">
+                                @forelse($topWorkshops as $i => $w)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge rounded-pill bg-primary me-3" style="width:34px">{{ $i+1 }}</span>
+                                            <a href="{{ route('workshops.show', $w) }}" class="text-decoration-none fw-semibold">
+                                                {{ $w->title }}
+                                            </a>
+                                        </div>
+                                        <div class="fw-bold">{{ $w->materials_count ?? 0 }} items</div>
+                                    </li>
+                                @empty
+                                    <li class="list-group-item text-muted">No workshops found.</li>
+                                @endforelse
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Top Venues (by upcoming count) --}}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Top Venues (Upcoming)</h5>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Venue</th>
+                                        <th class="text-end">Upcoming Workshops</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @forelse($topVenues as $i => $venue)
+                                        <tr>
+                                            <td>{{ $i+1 }}</td>
+                                            <td>{{ $venue->name }}</td>
+                                            <td class="text-end">{{ $venue->upcoming_count }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="3" class="text-center text-muted">No venues found.</td></tr>
+                                    @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>{{-- row --}}
+        </div>
+    </section>
+    {{-- Workshops Stats End --}}
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            (function () {
+                const el = document.getElementById('workshopsChart');
+                if (!el) return;
+
+                const labels = @json($labels);
+                const ws     = @json($seriesWorkshops);
+
+                new Chart(el, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Workshops',
+                            data: ws,
+                            borderWidth: 2,
+                            tension: 0.35,
+                            pointRadius: 3,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            })();
+        </script>
+    @endpush
+
+
+
 
 
 

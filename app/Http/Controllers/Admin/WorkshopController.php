@@ -10,11 +10,32 @@ use App\Models\Material;
 
 class WorkshopController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        $workshops = Workshop::with(['lieu','materials'])->latest()->paginate(10);
-        return view('admin.workshops.index', compact('workshops'));
+        $perPage = (int) $request->input('per_page', 10);
+        $perPage = in_array($perPage, [10,15,25,50], true) ? $perPage : 10;
+
+        $workshops = Workshop::query()
+            ->with(['lieu','materials'])
+            ->search($request->input('q'))
+            ->statusIs($request->input('status'))                 // draft | published
+            ->atLieu($request->input('lieu_id'))
+            ->period($request->input('period'))                   // upcoming|past|today|week|month
+            ->startBetween($request->input('from'), $request->input('to'))
+            ->capacityBetween($request->input('min_capacity'), $request->input('max_capacity'))
+            ->hasMaterial($request->input('material_id'))         // single
+            // ->hasAnyMaterials($request->input('material_ids', [])) // or many, if you enable multiselect in the view
+            ->sortBy($request->input('sort'))
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $lieux = Lieu::orderBy('name')->get(['id','name']);
+        $materials = Material::orderBy('name')->get(['id','name']);
+
+        return view('admin.workshops.index', compact('workshops','lieux','materials'));
     }
+
 
     public function create()
     {

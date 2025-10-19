@@ -10,13 +10,28 @@ use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::withCount([
-            'tasks as open_tasks_count' => fn($q) => $q->where('status', '!=', 'done')
-        ])->latest()->paginate(12);
+        $perPage = (int) $request->input('per_page', 12);
+        $perPage = in_array($perPage, [12,24,50,100], true) ? $perPage : 12;
 
-        return view('admin.projects.index', compact('projects'));
+        $projects = Project::query()
+            // eager count for open tasks (used in filter/sort and display)
+            ->withCount([
+                'tasks as open_tasks_count' => fn($q) => $q->where('status', '!=', 'done')
+            ])
+            ->search($request->input('q'))
+            ->status($request->input('status'))
+            ->progressBetween($request->input('min_progress'), $request->input('max_progress'))
+            ->dateBetween($request->input('from'), $request->input('to'))
+            ->openTasksBetween($request->input('min_open'), $request->input('max_open'))
+            ->sortBy($request->input('sort'))
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $statuses = ['planned','active','completed','archived'];
+
+        return view('admin.projects.index', compact('projects','statuses'));
     }
 
     public function create()

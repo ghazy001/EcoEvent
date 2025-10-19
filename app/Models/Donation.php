@@ -4,7 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Donation extends Model
 {
-    protected $fillable = ['cause_id','donor_name','amount','date'];
+    protected $fillable = ['cause_id','donor_name','amount','date', 'message', 'checkout_session_id'];
 
     protected $casts = [
         'amount' => 'decimal:2',

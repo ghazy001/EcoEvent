@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>@yield('title','Environs - Environmental & Nature Website Template')</title>
+    <title>@yield('title','EcoEvent - Environmental & Nature Website Template')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     {{-- Google Web Fonts --}}
@@ -22,8 +22,13 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+
     @stack('styles')
 </head>
+
+
 <body>
 
 {{-- Spinner --}}
@@ -60,5 +65,8 @@
 <script src="{{ asset('js/main.js') }}"></script>
 
 @stack('scripts')
+<x-chatbot />
+@stack('scripts')
+
 </body>
 </html>

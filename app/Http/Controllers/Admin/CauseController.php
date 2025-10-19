@@ -9,10 +9,25 @@ use Illuminate\Support\Facades\Storage;
 
 class CauseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $causes = Cause::paginate(10);
-        return view('admin.causes.index', compact('causes'));
+        $perPage = (int) ($request->input('per_page', 10));
+        $perPage = in_array($perPage, [10,15,25,50], true) ? $perPage : 10;
+
+        $causes = Cause::query()
+            ->withSum('donations', 'amount') // avoids N+1 for totals
+            ->search($request->input('q'))
+            ->status($request->input('status'))
+            ->goalBetween($request->input('min_goal'), $request->input('max_goal'))
+            ->hasImage($request->input('has_image'))
+            ->sortBy($request->input('sort'))
+            ->paginate($perPage)
+            ->withQueryString();
+
+        // For the status filter select
+        $statuses = ['active','completed','canceled'];
+
+        return view('admin.causes.index', compact('causes','statuses'));
     }
 
     public function create()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ArticleStatsController;
 use Illuminate\Support\Facades\Route;
 
 // Models
@@ -38,9 +39,22 @@ use App\Http\Controllers\ProjectController;
 use App\Models\Donation;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Lieu;
+
+use App\Http\Controllers\Admin\EventStatsController;
 
 
+use App\Http\Controllers\Admin\ProjectStatsController;
 
+
+use App\Http\Controllers\ChatbotController;
+
+
+use App\Http\Controllers\DonationCheckoutController;
+use App\Http\Controllers\StripeWebhookController;
+
+
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
 
 /*
@@ -103,13 +117,65 @@ Route::get('/', function () {
 
 
 
+    // ---- Workshops Stats (no registrations) ----
+    $now = now();
+
+    $totalWorkshops = (int) Workshop::count();
+    $publishedCount = (int) Workshop::where('status','published')->count();
+    $upcomingCount  = (int) Workshop::where('status','published')->where('start_at','>=',$now)->count();
+    $pastCount      = (int) Workshop::where('status','published')->where('start_at','<',$now)->count();
+
+    $totalCapacity  = (int) Workshop::sum('capacity');
+    $avgCapacity    = (int) round(Workshop::avg('capacity'));
+
+    // Avg materials per workshop (uses your many-to-many)
+    $avgMaterials   = (int) round(
+        (Workshop::withCount('materials')->get()->avg('materials_count')) ?? 0
+    );
+
+    // Top venues by upcoming published workshops
+    $topVenues = Lieu::withCount(['workshops as upcoming_count' => function($q) use ($now) {
+        $q->where('status','published')->where('start_at','>=',$now);
+    }])
+        ->orderByDesc('upcoming_count')
+        ->take(5)
+        ->get();
+
+    // Top workshops by materials count
+    $topWorkshops = Workshop::withCount('materials')
+        ->orderByDesc('materials_count')
+        ->take(5)
+        ->get();
+
+    // Workshops per month (last 12 months)
+    $from = $now->copy()->subMonths(11)->startOfMonth();
+    $raw = Workshop::selectRaw('DATE_FORMAT(start_at, "%Y-%m") as ym, COUNT(*) as cnt')
+        ->where('status','published')
+        ->where('start_at','>=',$from)
+        ->groupBy('ym')->orderBy('ym')->get()->keyBy('ym');
+
+    $labels = [];
+    $seriesWorkshops = [];
+    for ($i = 0; $i < 12; $i++) {
+        $month = $from->copy()->addMonths($i);
+        $ym    = $month->format('Y-m');
+        $labels[] = $month->isoFormat('MMM YYYY');
+        $seriesWorkshops[] = (int) ($raw[$ym]->cnt ?? 0);
+    }
+
+
+
 
     return view('home', compact(
         'featuredCauses', 'featuredEvents', 'featuredWorkshops',
         'totalRaised', 'donationsCnt', 'avgDonation',
         'totalGoal', 'globalPercent',
         'topCauses', 'recentDonations',
-        'labels', 'series'
+        'labels', 'series',
+        // stats vars for workshops:
+        'totalWorkshops','publishedCount','upcomingCount','pastCount',
+        'totalCapacity','avgCapacity','avgMaterials',
+        'labels','seriesWorkshops','topVenues','topWorkshops'
     ));
 })->name('home');
 
@@ -119,6 +185,20 @@ Route::get('/', function () {
 | Public / Front routes
 |--------------------------------------------------------------------------
 */
+
+// Donation checkout routes (using Stripe)
+Route::post('/causes/{cause}/donate/checkout', [DonationCheckoutController::class, 'create'])
+    ->name('causes.donations.checkout');
+
+Route::get('/donations/success', [DonationCheckoutController::class, 'success'])->name('donations.success');
+Route::get('/donations/cancel',  [DonationCheckoutController::class, 'cancel'])->name('donations.cancel');
+
+// webhook endpoint (must be POST)
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->name('stripe.webhook');
+
+
 Route::resource('causes', CauseController::class)->only(['index','show']);
 Route::post('causes/{cause}/donations', [DonationController::class, 'store'])
     ->name('causes.donations.store');
@@ -137,6 +217,15 @@ Route::get('/categories/{category}', [FrontCategoryController::class, 'show'])->
 
 Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
 Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+
+
+
+Route::prefix('api')
+    ->middleware('api') // gives you stateless API middleware (no CSRF)
+    ->group(function () {
+        Route::post('chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
+        Route::options('chatbot', fn() => response()->noContent());
+    });
 
 
 
@@ -168,6 +257,19 @@ Route::prefix('admin')
     ->group(function () {
 
 
+
+        // Project statistics dashboard
+        Route::get('projects/stats', [ProjectStatsController::class, 'index'])
+            ->name('projects.stats');
+
+
+        // Event statistics dashboard
+        Route::get('events/stats', [EventStatsController::class, 'index'])
+            ->name('events.stats');
+
+        // Article statistics dashboard
+        Route::get('articles/stats', [ArticleStatsController::class, 'index'])
+            ->name('articles.stats');
 
 
         // Users management
@@ -202,6 +304,10 @@ Route::prefix('admin')
         Route::resource('tasks',    AdminTaskController::class);
 
 
+
+
+
+
     });
 
 /*
@@ -209,7 +315,7 @@ Route::prefix('admin')
 | (Optional) Fallback for 404
 |--------------------------------------------------------------------------
 */
-// Route::fallback(fn() => abort(404));
+ Route::fallback(fn() => abort(404));
 
 
 

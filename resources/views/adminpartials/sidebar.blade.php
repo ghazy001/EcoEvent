@@ -2,9 +2,7 @@
     <!-- Sidebar scroll-->
     <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
-            <a href="{{ url('/') }}" class="text-nowrap logo-img">
-                <img src="{{ asset('assets/images/logos/logo.svg') }}" alt="" />
-            </a>
+          <h1 class="logo-text fw-bold m-0">EcoEvent</h1>
             <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                 <i class="ti ti-x fs-6"></i>
             </div>
@@ -30,6 +28,15 @@
                         <span class="hide-menu">Events</span>
                     </a>
                 </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('admin.events.stats') }}" aria-expanded="false">
+                        <i class="ti ti-atom"></i>
+                        <span class="hide-menu">Event Stats</span>
+                    </a>
+                </li>
+
+
 
                 <li class="sidebar-item">
                     <a class="sidebar-link" href="{{ route('admin.causes.index') }}" aria-expanded="false">
@@ -66,6 +73,16 @@
                     </a>
                 </li>
 
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('admin.articles.stats') }}" aria-expanded="false">
+                        <i class="ti ti-atom"></i>
+                        <span class="hide-menu">Articles Stats</span>
+                    </a>
+                </li>
+
+
+
                 <li class="sidebar-item">
                     <a class="sidebar-link" href="{{ route('admin.categories.index') }}" aria-expanded="false">
                         <i class="ti ti-atom"></i>
@@ -80,13 +97,21 @@
                 </li>
 
                 <li class="sidebar-item">
+                    <a class="sidebar-link" href="{{ route('admin.projects.stats') }}" aria-expanded="false">
+                        <i class="ti ti-atom"></i>
+                        <span class="hide-menu">projects Stats</span>
+                    </a>
+                </li>
+
+
+
+
+                <li class="sidebar-item">
                     <a class="sidebar-link" href="{{ route('admin.tasks.index') }}" aria-expanded="false">
                         <i class="ti ti-atom"></i>
                         <span class="hide-menu">tasks</span>
                     </a>
                 </li>
-
-
 
 
 

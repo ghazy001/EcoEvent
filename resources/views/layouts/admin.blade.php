@@ -7,6 +7,8 @@
     <title>{{ config('app.name', 'Flexy Admin') }}</title>
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/logos/favicon.png') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
+    <script src="https://unpkg.com/alpinejs" defer></script>
+
     @stack('styles')
 </head>
 <body>
@@ -17,7 +19,7 @@
     <div class="app-topstrip bg-dark py-6 px-3 w-100 d-lg-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center justify-content-center gap-5 mb-2 mb-lg-0">
             <a class="d-flex justify-content-center" href="{{ url('/') }}">
-                <img src="{{ asset('assets/images/logos/logo-wrappixel.svg') }}" alt="" width="150">
+                    <img src="{{ asset('assets/images/logos/logo-wrappixel.svg') }}" alt="" width="150">
             </a>
         </div>
         <div class="d-lg-flex align-items-center gap-2">
@@ -39,9 +41,9 @@
                 <div class="py-6 px-6 text-center">
                     <p class="mb-0 fs-4">
                         Design and Developed by
-                        <a href="#" class="pe-1 text-primary text-decoration-underline">Wrappixel.com</a>
+                        <a href="https://github.com/ghazy001" class="pe-1 text-primary text-decoration-underline">Ghazi saoudi</a>
                         Distributed by
-                        <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+                        <a href="https://github.com/ghazy001" class="pe-1 text-primary text-decoration-underline">Ghazi saoudi</a>
                     </p>
                 </div>
             </div>
